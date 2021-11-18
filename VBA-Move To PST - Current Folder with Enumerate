@@ -1,0 +1,51 @@
+'VBA-Backup Current Folder With SubFolders to same name PST when over 20 days
+'need same name main folder and same name subFolders.
+'e.g. selected folder "Inbox > A", the PST must name "A"
+'Emails in "A"'s sub folder "A-1", the PST "A" also must have sub folder "A-1".
+'if email in "A-1" over 20 days, will be move to PST "A > A-1"
+'you can change the days >> DateValue(MailItem.ReceivedTime) >= ???
+'If there are many email items, need to wait a moment
+
+Sub backupCurrentFolder()
+Dim myExplorer As Outlook.Explorer
+Dim sourceFolder As Outlook.Folder
+Set myExplorer = Application.ActiveExplorer
+Set sourceFolder = myExplorer.CurrentFolder
+'Debug.Print sourceFolder
+
+On Error Resume Next
+Dim destFolder As Outlook.MAPIFolder
+Set destFolder = Outlook.Session.folders(sourceFolder.Name)
+'Debug.Print destFolder
+
+If Not destFolder Is Nothing Then
+    'Debug.Print "Exists"
+    For Each SubFolder In sourceFolder.folders
+        EnumerateFolders sourceFolder, destFolder
+    Next SubFolder
+Else
+    Debug.Print "No same name PST"
+End If
+End Sub
+
+Function EnumerateFolders(ByVal sourSubFolder As Outlook.Folder, ByVal destSubFolder As Outlook.Folder)
+For Each subFolders In sourSubFolder.folders
+        For Each subDFolders In destSubFolder.folders
+            If subFolders = subDFolders Then
+                mailMove subFolders, subDFolders
+                EnumerateFolders subFolders, subDFolders
+            End If
+        Next subDFolders
+Next subFolders
+End Function
+
+Function mailMove(ByVal sourSubFolder As Outlook.Folder, ByVal destSubFolder As Outlook.Folder)
+MailsCount = sourSubFolder.Items.Count
+While MailsCount > 0
+    Set MailItem = sourSubFolder.Items.Item(MailsCount)
+    If DateValue(Now) - DateValue(MailItem.ReceivedTime) >= 20 Then
+        sourSubFolder.Items.Item(MailsCount).Move destSubFolder
+    End If
+    MailsCount = MailsCount - 1
+Wend
+End Function

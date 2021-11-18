@@ -1,0 +1,19 @@
+'Delete empty subject emails in PersonMetadata
+
+Sub DeletePersonMetadataItems()
+Dim myMail As String
+myMail = Application.Session.DefaultStore 'your email address
+
+Dim myNs As Outlook.Namespace
+Dim pfolder As Outlook.MAPIFolder
+Set myNs = Application.GetNamespace("MAPI")
+Set pfolder = myNs.folders(myMail).folders("PersonMetadata")
+MailsCount = pfolder.Items.Count
+While MailsCount > 0
+    Set MailItem = pfolder.Items.Item(MailsCount)
+    If MailItem.Subject <> "Nothing" Then
+         MailItem.Delete
+    End If
+    MailsCount = MailsCount - 1
+Wend
+End Sub

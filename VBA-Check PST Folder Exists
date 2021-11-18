@@ -1,0 +1,20 @@
+'Chack same name PST folder's Exists or not
+
+Sub CheckPSTFolderExists()
+Dim myExplorer As Outlook.Explorer
+Dim sourceFolder As Outlook.Folder
+Set myExplorer = Application.ActiveExplorer
+Set sourceFolder = myExplorer.CurrentFolder
+Debug.Print sourceFolder
+
+On Error Resume Next
+Dim destFolder As Outlook.MAPIFolder
+Set destFolder = Outlook.Session.folders(sourceFolder.Name)
+'Debug.Print destFolder
+
+If Not destFolder Is Nothing Then
+    Debug.Print "Exists"
+Else
+    Debug.Print "No same name PST"
+End If
+End Sub

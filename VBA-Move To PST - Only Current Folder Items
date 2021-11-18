@@ -1,0 +1,34 @@
+'VBA-BackUp Current Folder Emails to same name PST
+'need same name folder & PST folder.
+'e.g. selected folder "Inbox > A", the PST must name "A"
+'if email in "A" over 20days, will be move to PST "A"
+'If there are many email items, need to wait a moment
+
+Sub CurrentFolderItemsToPST()
+
+Dim myExplorer As Outlook.Explorer
+Dim SourceFolder As Outlook.Folder
+Set myExplorer = Application.ActiveExplorer
+Set SourceFolder = myExplorer.CurrentFolder
+'Debug.Print SourceFolder.FolderPath
+
+On Error Resume Next
+Dim DestFolder As Outlook.MAPIFolder
+Set DestFolder = Outlook.Session.folders(SourceFolder.Name)
+'Debug.Print DestFolder.FolderPath
+
+Dim NumberOfDays As Integer
+NumberOfDays = 20
+
+Dim MailsCount As Integer
+MailsCount = SourceFolder.Items.Count
+
+While MailsCount > 0
+    Set MailItem = SourceFolder.Items.Item(MailsCount)
+    If DateValue(Now) - DateValue(MailItem.ReceivedTime) >= NumberOfDays Then
+        SourceFolder.Items.Item(MailsCount).Move DestFolder
+    End If
+    MailsCount = MailsCount - 1
+Wend
+End Sub
+

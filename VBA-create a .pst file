@@ -1,0 +1,26 @@
+'create a .pst file with the selected same name if not exist. 
+'*Please avoid have other name "Outlook*" PST file
+'if need sub folder, can add Enumerate Folders for further function.
+
+Sub CreatePST()
+Dim myExplorer As Outlook.Explorer
+Dim SourceFolder As Outlook.Folder
+Set myExplorer = Application.activeExplorer
+Set SourceFolder = myExplorer.currentFolder
+
+Dim pstName As String
+pstName = SourceFolder 'PST name is current selected Folder
+
+Dim newSpace As Outlook.NameSpace
+Set newSpace = Application.GetNamespace("MAPI")
+newSpace.AddStoreEx "D:\Outlook Backup\" & pstName & ".pst", olStoreUnicode
+
+For Each n In newSpace.Folders
+    If n Like "Outlook*" Then 
+        n.Name = pstName
+    End If
+Next n
+
+Dim pstFolder As Outlook.MAPIFolder
+Set pstFolder = Outlook.Session.Folders(pstName)
+End Sub

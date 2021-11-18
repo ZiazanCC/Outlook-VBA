@@ -1,0 +1,18 @@
+'Enumerate Current Folders
+'If need Enumerate All Folders
+'You can chnage sourceFolder to 
+'Set sourceFolder = Application.Session.GetDefaultFolder(olFolderInbox)
+
+Sub EnumerateCurrentFolder()
+Dim sourceFolder As Outlook.Folder
+Set sourceFolder = Application.ActiveExplorer.CurrentFolder
+Debug.Print sourceFolder
+EnumerateFolders sourceFolder
+End Sub
+
+Function EnumerateFolders(ByVal sourSubFolder As Outlook.Folder)
+For Each subFolders In sourSubFolder.folders
+    Debug.Print subFolders
+    EnumerateFolders subFolders
+Next subFolders
+End Function

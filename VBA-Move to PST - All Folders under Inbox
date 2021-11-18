@@ -1,0 +1,35 @@
+Sub backUpAllFolder()
+Dim sourInbox As Outlook.Folder
+Set sourInbox = Application.Session.GetDefaultFolder(olFolderInbox)
+Dim DestFolder As Outlook.MAPIFolder
+On Error Resume Next
+For Each SubFolder In sourInbox.folders
+    Set DestFolder = Outlook.Session.folders(SubFolder.Name)
+    If Not DestFolder Is Nothing Then
+        mailMove SubFolder, DestFolder
+        EnumerateFolders SubFolder, DestFolder
+    End If
+Next SubFolder
+End Sub
+
+Function EnumerateFolders(ByVal sourSubFolder As Outlook.Folder, ByVal destSubFolder As Outlook.Folder)
+For Each subFolders In sourSubFolder.folders
+        For Each subDFolders In destSubFolder.folders
+            If subFolders = subDFolders Then
+                mailMove subFolders, subDFolders
+                EnumerateFolders subFolders, subDFolders
+            End If
+        Next subDFolders
+Next subFolders
+End Function
+
+Function mailMove(ByVal sourSubFolder As Outlook.Folder, ByVal destSubFolder As Outlook.Folder)
+MailsCount = sourSubFolder.Items.Count
+While MailsCount > 0
+    Set MailItem = sourSubFolder.Items.item(MailsCount)
+    If DateValue(Now) - DateValue(MailItem.ReceivedTime) >= 20 Then
+        sourSubFolder.Items.item(MailsCount).Move destSubFolder
+    End If
+    MailsCount = MailsCount - 1
+Wend
+End Function

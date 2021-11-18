@@ -1,0 +1,27 @@
+'You can change ePath & dest
+
+Sub SaveAttachments()
+Dim myNameSpace As Outlook.Namespace
+Dim myFolder As Outlook.Folder
+Dim destFolder As Outlook.Folder
+Dim dest As String
+
+'attachments will be save to this folder, if not exists will be create
+ePath = "D:\OutlookAttachment\"
+If Len(Dir(ePath, vbDirectory)) = 0 Then
+    MkDir ePath
+End If
+'dest folder under Inbox and have Emails which you want to download attachments
+dest = "attachment"
+
+Set myNameSpace = Application.GetNamespace("MAPI")
+Set myFolder = myNameSpace.GetDefaultFolder(olFolderInbox)
+
+Set destFolder = myFolder.folders(dest)
+
+For Each item In destFolder.Items
+    For Each attach In item.Attachments
+        attach.SaveAsFile ePath & attach.FileName
+    Next
+Next
+End Sub
