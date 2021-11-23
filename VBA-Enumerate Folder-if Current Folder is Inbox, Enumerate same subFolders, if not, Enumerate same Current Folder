@@ -1,0 +1,101 @@
+Sub backupCurrentFolder()
+Dim myExplorer As Outlook.Explorer
+Dim SourceFolder As Outlook.Folder
+Dim DestFolder As Outlook.MAPIFolder
+Set myExplorer = Application.ActiveExplorer
+Set SourceFolder = myExplorer.CurrentFolder
+Debug.Print SourceFolder.Name
+
+On Error Resume Next
+
+If SourceFolder.Name = "Inbox" Then
+    Debug.Print "EnumerateFolders Inbox"
+    For Each SubFolder In SourceFolder.folders
+        Set DestFolder = Outlook.Session.folders(SubFolder.Name)
+        If Not DestFolder Is Nothing Then
+            EnumerateFolders SubFolder, DestFolder
+        End If
+    Next SubFolder
+Else
+    Set DestFolder = Outlook.Session.folders(SourceFolder.Name)
+    If Not DestFolder Is Nothing Then
+        Debug.Print "EnumerateFolders SubFolder"
+        For Each SubFolder In SourceFolder.folders
+            EnumerateFolders SourceFolder, DestFolder
+        Next SubFolder
+    Else
+        Debug.Print "No same name PST"
+    End If
+End If
+Call DeletePersonMetadataItems
+End Sub
+
+Function EnumerateFolders(ByVal sourSubFolder As Outlook.Folder, ByVal destSubFolder As Outlook.Folder)
+For Each subFolders In sourSubFolder.folders
+        For Each subDFolders In destSubFolder.folders
+            If subFolders = subDFolders Then
+                mailMove subFolders, subDFolders
+                EnumerateFolders subFolders, subDFolders
+            End If
+        Next subDFolders
+Next subFolders
+End Function
+
+Function mailMove(ByVal sourSubFolder As Outlook.Folder, ByVal destSubFolder As Outlook.Folder)
+MailsCount = sourSubFolder.Items.Count
+While MailsCount > 0
+    Set MailItem = sourSubFolder.Items.Item(MailsCount)
+    If DateValue(Now) - DateValue(MailItem.ReceivedTime) >= 20 Then
+        sourSubFolder.Items.Item(MailsCount).Move destSubFolder
+    End If
+    MailsCount = MailsCount - 1
+Wend
+End Function
+
+Sub BackUpCurrentFolderItemsToPST()
+
+Dim myExplorer As Outlook.Explorer
+Dim SourceFolder As Outlook.Folder
+Set myExplorer = Application.ActiveExplorer
+Set SourceFolder = myExplorer.CurrentFolder
+'Debug.Print SourceFolder.FolderPath
+
+Dim DestFolder As Outlook.MAPIFolder
+Set DestFolder = Outlook.Session.folders("Sent Items").folders(SourceFolder.Name)
+'Debug.Print DestFolder.FolderPath
+
+Dim NumberOfDays As Integer
+NumberOfDays = 20
+
+Dim MailsCount As Integer
+MailsCount = SourceFolder.Items.Count
+
+While MailsCount > 0
+    Set MailItem = SourceFolder.Items.Item(MailsCount)
+    If DateValue(Now) - DateValue(MailItem.ReceivedTime) >= NumberOfDays Then
+        SourceFolder.Items.Item(MailsCount).Move DestFolder
+    End If
+    MailsCount = MailsCount - 1
+Wend
+Call DeletePersonMetadataItems
+End Sub
+
+'Delete empty subject emails in PersonMetadata
+
+Sub DeletePersonMetadataItems()
+Dim myMail As String
+myMail = Application.Session.DefaultStore 'your email address
+
+Dim myNs As Outlook.Namespace
+Dim pfolder As Outlook.MAPIFolder
+Set myNs = Application.GetNamespace("MAPI")
+Set pfolder = myNs.folders(myMail).folders("PersonMetadata")
+MailsCount = pfolder.Items.Count
+While MailsCount > 0
+    Set MailItem = pfolder.Items.Item(MailsCount)
+    If MailItem.Subject <> "Nothing" Then
+         MailItem.Delete
+    End If
+    MailsCount = MailsCount - 1
+Wend
+End Sub
