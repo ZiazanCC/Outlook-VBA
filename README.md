@@ -9,4 +9,4 @@ You can press Alt+F11 to open the VBA Project window.
 Insert Module and Paste above code.
 
 # Compatibility
-Tested ONLY in MS Outlook 2016
+Tested ONLY in MS Outlook 365 ProPlus
